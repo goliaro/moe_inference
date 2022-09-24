@@ -1,4 +1,5 @@
-# fairseq_exp
+# MoE inference with Fairseq
+This repository contains scripts to streamline the execution of MoE inference using FairSeq
 
 ## Install docker
 
