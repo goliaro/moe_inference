@@ -1,3 +1,11 @@
+#!/bin/bash
+set -e
+
+shopt -s expand_aliases
+alias python=python3
+
+rm -rf data && mkdir data && cd data
+
 # Download dataset
 wget https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-103-raw-v1.zip
 unzip wikitext-103-raw-v1.zip
@@ -35,4 +43,6 @@ rm en_moe_lm_15b.tar.gz
 mv en_moe_lm_15b/model-shared.pt en_moe_lm_15b/model.pt 
 
 # Truncate model-shared.pt's embedding table to only include the first 51200 entries
-python -c "import torch; ckpt = torch.load('model.pt'); print(ckpt['model']['decoder.embed_tokens.weight'].shape); ckpt['model']['decoder.embed_tokens.weight'] = ckpt['model']['decoder.embed_tokens.weight'][:51200]; torch.save(ckpt, 'model.pt')"
+python -c "import torch; ckpt = torch.load('en_moe_lm_15b/model.pt'); print(ckpt['model']['decoder.embed_tokens.weight'].shape); ckpt['model']['decoder.embed_tokens.weight'] = ckpt['model']['decoder.embed_tokens.weight'][:51200]; torch.save(ckpt, 'en_moe_lm_15b/model.pt')"
+
+cd ..
