@@ -3,7 +3,7 @@ set -e
 
 DATA_PATH=/mnt/data-bin/wikitext-103
 MODEL_PATH=/mnt/en_moe_lm_15b/model.pt
-
+export NCCL_DEBUG=INFO
 python -m fairseq_cli.eval_lm $DATA_PATH \
   --path $MODEL_PATH \
   --gen-subset valid \
