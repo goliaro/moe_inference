@@ -24,7 +24,8 @@ RUN rm -rf /var/lib/apt/lists/* \
         cmake \
         net-tools \
         sudo \
-        htop
+        htop \
+	nano
 
 RUN git clone -b moe https://github.com/pytorch/fairseq && cd fairseq && pip install --editable ./
 

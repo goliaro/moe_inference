@@ -13,6 +13,6 @@ python -m fairseq_cli.eval_lm $DATA_PATH \
   --fp16 \
   --output-word-probs \
   --is-moe \
-  --distributed-world-size 1 \
+  --distributed-world-size 4 \
   --max-valid-steps 4 \
-  --model-overrides "{'world_size': 1, 'moe_eval_capacity_token_fraction': 0.05}"
+  --model-overrides "{'world_size': 4, 'moe_eval_capacity_token_fraction': 0.05}"
