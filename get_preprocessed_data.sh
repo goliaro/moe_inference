@@ -42,7 +42,7 @@ tar -xf en_moe_lm_15b.tar.gz
 rm en_moe_lm_15b.tar.gz
 mv en_moe_lm_15b/model-shared.pt en_moe_lm_15b/model.pt 
 
-# Truncate model-shared.pt's embedding table to only include the first 51200 entries
-python -c "import torch; ckpt = torch.load('en_moe_lm_15b/model.pt'); print(ckpt['model']['decoder.embed_tokens.weight'].shape); ckpt['model']['decoder.embed_tokens.weight'] = ckpt['model']['decoder.embed_tokens.weight'][:51200]; torch.save(ckpt, 'en_moe_lm_15b/model.pt')"
+# Truncate model-shared.pt's embedding table to only include the first 50264 entries
+python -c "import torch; ckpt = torch.load('en_moe_lm_15b/model.pt'); print(ckpt['model']['decoder.embed_tokens.weight'].shape); ckpt['model']['decoder.embed_tokens.weight'] = ckpt['model']['decoder.embed_tokens.weight'][:50264]; torch.save(ckpt, 'en_moe_lm_15b/model.pt')"
 
 cd ..
