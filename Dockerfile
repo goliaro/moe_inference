@@ -25,7 +25,7 @@ RUN rm -rf /var/lib/apt/lists/* \
         net-tools \
         sudo \
         htop \
-	nano
+	    nano
 
 RUN git clone -b moe https://github.com/pytorch/fairseq && cd fairseq && pip install --editable ./
 
