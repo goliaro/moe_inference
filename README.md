@@ -75,13 +75,50 @@ See here for more info: [StackOverflow link](https://stackoverflow.com/questions
 ## Known issues and troubleshooting
 
 <details>
-<summary>4-GPU machine issue</summary>
+<summary>Wrong MODEL_PATH definition causes inference script to hang/error</summary>
 <br>
 
-Currently, the scripts above have been tested on two types of machines: a p3.8xlarge EC2 instance with 4 Nvidia V100, and another instance with 8 GPUs. The scripts work well on the 8-GPU machine, whereas the inference gets stuck on the p3 EC2, apparently during the loading of the pretrained model. Here are more details on the issue.
+After having pre-processed the data and downloaded the checkpoint, you will have a folder called `data/en_moe_lm_15b`, which is mounted at `/mnt/data/en_moe_lm_15b` in the Docker container (if you used the provided scripts without making any edits). The folder contains a file named `model-shared.pt`, and several `model-rank-<N>.pt` files. Notice that there is no `model.pt` file. Despite this, you will need to pass a `--path` argument to `fairseq_cli.eval_lm` that points to the non-existing `model.pt` file. For instance, in the [scripts/run_inference.sh](./scripts/run_inference.sh) script, we pass `--path $MODEL_PATH`, after having set `MODEL_PATH=/mnt/en_moe_lm_15b/model.pt`. This might seem odd, but any other choice for the argument will result either in error, or will make the `eval_lm` CLI hang, as follows:
 
-**Behavior:**
-The Fairseq script (called by `run_inference.sh`) will run for 1min or so, with several threads reaching high CPU utilization (~100%). You will also see the RAM usage go up progressively, together with the GPU memory usage. At some point, after around ~60-70 GB of RAM have been allocated, all the threads will drop to 0% CPU utilization, and the application will idle indefinitely. GPU memory usage will remain high and constant, with about 1-2GB left on all 4 V100 GPUs, each with a total of 16GB available memory. No additional information will be printed to stdout or stderr.
+**If you set `MODEL_PATH=/mnt/en_moe_lm_15b/model-shared.pt`** you will get an error similar to the one below:
+
+```bash
+2022-09-28 22:43:29 | INFO | fairseq.checkpoint_utils | load_model_ensemble_and_task is_moe=True
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/workspace/fairseq/fairseq_cli/eval_lm.py", line 448, in <module>
+    cli_main()
+  File "/workspace/fairseq/fairseq_cli/eval_lm.py", line 444, in cli_main
+    distributed_utils.call_main(convert_namespace_to_omegaconf(args), main)
+  File "/workspace/fairseq/fairseq/distributed/utils.py", line 358, in call_main
+    join=True,
+  File "/opt/conda/lib/python3.7/site-packages/torch/multiprocessing/spawn.py", line 230, in spawn
+    return start_processes(fn, args, nprocs, join, daemon, start_method='spawn')
+  File "/opt/conda/lib/python3.7/site-packages/torch/multiprocessing/spawn.py", line 188, in start_processes
+    while not context.join():
+  File "/opt/conda/lib/python3.7/site-packages/torch/multiprocessing/spawn.py", line 150, in join
+    raise ProcessRaisedException(msg, error_index, failed_process.pid)
+torch.multiprocessing.spawn.ProcessRaisedException: 
+
+-- Process 0 terminated with the following error:
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/site-packages/torch/multiprocessing/spawn.py", line 59, in _wrap
+    fn(i, *args)
+  File "/workspace/fairseq/fairseq/distributed/utils.py", line 335, in distributed_main
+    main(cfg, **kwargs)
+  File "/workspace/fairseq/fairseq_cli/eval_lm.py", line 391, in main
+    is_moe=is_moe or is_base_moe,
+  File "/workspace/fairseq/fairseq/checkpoint_utils.py", line 450, in load_model_ensemble_and_task
+    raise IOError("Model file not found: {}".format(filename))
+OSError: Model file not found: /mnt/en_moe_lm_15b/model-shared-rank-0.pt
+```
+
+**If you set `MODEL_PATH=/mnt/en_moe_lm_15b/model.pt` and rename `/mnt/en_moe_lm_15b/model-shared.pt` to `/mnt/en_moe_lm_15b/model.pt` you will get the fairseq script to hang as described below:**
+
+The Fairseq script (called by `run_inference.sh`) will run for 1min or so, with several threads reaching high CPU utilization (~100%). You will also see the RAM usage go up progressively, together with the GPU memory usage. At some point, after around ~60-70 GB of RAM have been allocated, all the threads will drop to 0% CPU utilization, and the application will idle indefinitely. GPU memory usage will remain high and constant. No additional information will be printed to stdout or stderr.
 
 Stdout tail:
 ```bash
@@ -139,7 +176,7 @@ Tue Sep 27 20:26:34 2022
 +-----------------------------------------------------------------------------+
 ```
 
-If we interrupt the process with Ctrl+C, we get the following Stderr log, indicating that the N worker threads (where N is determined by the world size parameter we set in `run_inference.sh`) are stuck while loading the state dict from the pretrained model (`model.load_state_dict` function). Below, the full stderr and a screenshot focusing on the 4 worker threads.
+If you interrupt the process with Ctrl+C, you will get the following Stderr log, indicating that the N worker threads (where N is determined by the world size parameter we set in `run_inference.sh`) are stuck while loading the state dict from the pretrained model (`model.load_state_dict` function). Below, the full stderr and a screenshot for the N=4 worker threads case.
 
 [error.log](https://github.com/gabrieleoliaro/fairseq_exp/files/9665756/error.log)
 
