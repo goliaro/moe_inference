@@ -54,8 +54,8 @@ You can now build and run the docker container using:
 
 If you want to only share certain GPUs with the docker container, edit the `run.sh` file to do so.
 
-## Run the MoE inference
-Next, head to the `fairseq` folder within the docker container, edit the `world_size` and `distributed-world-size` according to the number of GPUs available on the system, and run the `run_inference.sh` script 
+## Run the MoE eval
+Next, head to the `fairseq` folder within the docker container, edit the `world_size` and `distributed-world-size` according to the number of GPUs available on the system, and run the `run_eval.sh` script 
 
 ## Save changes to the Docker container
 After you exit the Docker container, you can get the container ID of the latest instance by running `docker ps -a`. If you want to log into the same container again, you can do so with:
@@ -78,7 +78,7 @@ See here for more info: [StackOverflow link](https://stackoverflow.com/questions
 <summary>Wrong MODEL_PATH definition causes inference script to hang/error</summary>
 <br>
 
-After having pre-processed the data and downloaded the checkpoint, you will have a folder called `data/en_moe_lm_15b`, which is mounted at `/mnt/data/en_moe_lm_15b` in the Docker container (if you used the provided scripts without making any edits). The folder contains a file named `model-shared.pt`, and several `model-rank-<N>.pt` files. Notice that there is no `model.pt` file. Despite this, you will need to pass a `--path` argument to `fairseq_cli.eval_lm` that points to the non-existing `model.pt` file. For instance, in the [scripts/run_inference.sh](./scripts/run_inference.sh) script, we pass `--path $MODEL_PATH`, after having set `MODEL_PATH=/mnt/en_moe_lm_15b/model.pt`. This might seem odd, but any other choice for the argument will result either in error, or will make the `eval_lm` CLI hang, as follows:
+After having pre-processed the data and downloaded the checkpoint, you will have a folder called `data/en_moe_lm_15b`, which is mounted at `/mnt/data/en_moe_lm_15b` in the Docker container (if you used the provided scripts without making any edits). The folder contains a file named `model-shared.pt`, and several `model-rank-<N>.pt` files. Notice that there is no `model.pt` file. Despite this, you will need to pass a `--path` argument to `fairseq_cli.eval_lm` that points to the non-existing `model.pt` file. For instance, in the [scripts/run_eval.sh](./scripts/run_eval.sh) script, we pass `--path $MODEL_PATH`, after having set `MODEL_PATH=/mnt/en_moe_lm_15b/model.pt`. This might seem odd, but any other choice for the argument will result either in error, or will make the `eval_lm` CLI hang, as follows:
 
 **If you set `MODEL_PATH=/mnt/en_moe_lm_15b/model-shared.pt`** you will get an error similar to the one below:
 
@@ -118,7 +118,7 @@ OSError: Model file not found: /mnt/en_moe_lm_15b/model-shared-rank-0.pt
 
 **If you set `MODEL_PATH=/mnt/en_moe_lm_15b/model.pt` and rename `/mnt/en_moe_lm_15b/model-shared.pt` to `/mnt/en_moe_lm_15b/model.pt` you will get the fairseq script to hang as described below:**
 
-The Fairseq script (called by `run_inference.sh`) will run for 1min or so, with several threads reaching high CPU utilization (~100%). You will also see the RAM usage go up progressively, together with the GPU memory usage. At some point, after around ~60-70 GB of RAM have been allocated, all the threads will drop to 0% CPU utilization, and the application will idle indefinitely. GPU memory usage will remain high and constant. No additional information will be printed to stdout or stderr.
+The Fairseq script (called by `run_eval.sh`) will run for 1min or so, with several threads reaching high CPU utilization (~100%). You will also see the RAM usage go up progressively, together with the GPU memory usage. At some point, after around ~60-70 GB of RAM have been allocated, all the threads will drop to 0% CPU utilization, and the application will idle indefinitely. GPU memory usage will remain high and constant. No additional information will be printed to stdout or stderr.
 
 Stdout tail:
 ```bash
@@ -176,7 +176,7 @@ Tue Sep 27 20:26:34 2022
 +-----------------------------------------------------------------------------+
 ```
 
-If you interrupt the process with Ctrl+C, you will get the following Stderr log, indicating that the N worker threads (where N is determined by the world size parameter we set in `run_inference.sh`) are stuck while loading the state dict from the pretrained model (`model.load_state_dict` function). Below, the full stderr and a screenshot for the N=4 worker threads case.
+If you interrupt the process with Ctrl+C, you will get the following Stderr log, indicating that the N worker threads (where N is determined by the world size parameter we set in `run_eval.sh`) are stuck while loading the state dict from the pretrained model (`model.load_state_dict` function). Below, the full stderr and a screenshot for the N=4 worker threads case.
 
 [error.log](https://github.com/gabrieleoliaro/fairseq_exp/files/9665756/error.log)
 

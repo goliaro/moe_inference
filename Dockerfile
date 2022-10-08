@@ -27,7 +27,7 @@ RUN rm -rf /var/lib/apt/lists/* \
         htop \
 	    nano
 
-RUN git clone -b moe https://github.com/pytorch/fairseq && cd fairseq && pip install --editable ./
+RUN git clone -b moe https://github.com/gabrieleoliaro/fairseq && cd fairseq && pip install --editable ./
 
 RUN pip install boto3 iopath fairscale
 
