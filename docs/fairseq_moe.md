@@ -1,5 +1,9 @@
 # Fairseq MoE
 
+## Parallelism
+
+Fairseq by default uses data parallelism only; model parallelism is supported by passing a `model_parallelism_size` parameter greater than 1. Model parallel is implemented using Megatron, in particular, the framework loads Megatron as a submodule using [this fork](https://github.com/ngoyal2707/Megatron-LM) (branch `fairseq`).
+
 ## Model architecture 
 The Fairseq MoE model created when loading the MoE 15B checkpoint has essentially a GPT structure, with 12 `TransformerDecoderLayers` where a MoE is inserted in every other layer. No encoder layer is used. Each MoE has a Top 2 gating function and 128 experts. 
 
