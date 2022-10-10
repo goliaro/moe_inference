@@ -318,3 +318,84 @@ The profiling was done as follows. Using the [Pytorch profiler](https://pytorch.
 The inference is performed using data parallelism with N=4 threads, each using its own V100 GPU. Each thread is spawned via `torch.multiprocessing.spawn` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/443be319435410ed8a63de0ae2ec25ba5cf6adaf/fairseq/distributed/utils.py#L362)). We intially tried wrapping the entire main function (before the call to spawn) into the profiler context, in the hope that the profiler could automatically gather data from the N=4 processes and merge them, but that didn't work, so we resorted to profiling each thread individually and saving the results to separate files.
 
 ### Analysis
+Among the results, the two most interesting files are those recording the functions sorted by total cpu time, and those recording the functions sorted by total cuda time. For each of these two views, we have one file for each threads. The results are similar, so we will just include one file (using thread 1) for each of the two cases.
+
+***CPU time total (thread 1)***
+
+```
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg       CPU Mem  Self CPU Mem      CUDA Mem  Self CUDA Mem    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                eval_lm        28.68%        6.920s        99.41%       23.986s       23.986s       0.000us         0.00%        1.073s        1.073s    -192.10 Kb    -192.16 Kb      11.03 Mb      -3.07 Gb             1  
+                                     TransformerDecoder         0.11%      27.132ms        51.31%       12.381s        2.476s       0.000us         0.00%        1.018s     203.577ms         -20 b     -32.00 Mb       1.16 Gb    -409.12 Mb             5  
+                       TransformerDecoderLayer with MoE         0.34%      81.178ms        29.16%        7.036s     234.543ms       0.000us         0.00%     944.564ms      31.485ms        -120 b        -600 b     273.04 Mb     -19.13 Gb            30  
+                                               MoELayer         6.01%        1.450s        28.30%        6.828s     227.591ms       0.000us         0.00%     899.195ms      29.973ms        -120 b        -584 b      18.95 Gb    -105.64 Gb            30  
+                                       cudaLaunchKernel        19.62%        4.735s        19.62%        4.735s      95.159us       0.000us         0.00%       0.000us       0.000us           0 b           0 b           0 b           0 b         49760  
+                                               aten::eq         0.03%       6.307ms        15.14%        3.652s      48.696ms     110.000us         0.00%     110.000us       1.467us           0 b           0 b      60.00 Kb      60.00 Kb            75  
+                                           aten::linear         0.65%     157.940ms        15.08%        3.638s     453.959us       0.000us         0.00%     430.346ms      53.693us           0 b           0 b      13.65 Gb           0 b          8015  
+                                             aten::item         2.06%     496.279ms        11.99%        2.894s      70.591us       0.000us         0.00%      41.010ms       1.000us           0 b           0 b           0 b           0 b         40995  
+                              aten::_local_scalar_dense         3.56%     858.811ms         9.94%        2.398s      58.485us      41.010ms         1.40%      41.010ms       1.000us           0 b           0 b           0 b           0 b         40995  
+                                            aten::addmm         4.76%        1.149s         7.19%        1.735s     224.223us     404.881ms        13.80%     404.881ms      52.310us           0 b           0 b      11.92 Gb      11.92 Gb          7740  
+                                     MultiheadAttention         0.21%      49.825ms         6.80%        1.642s      27.361ms       0.000us         0.00%      84.565ms       1.409ms        -240 b      -1.17 Kb     182.25 Mb     -12.32 Gb            60  
+                    TransformerDecoderLayer without MoE         0.09%      20.704ms         6.72%        1.621s      54.018ms       0.000us         0.00%      60.959ms       2.032ms        -120 b        -600 b     275.25 Mb      -2.38 Gb            30  
+                                        cudaMemcpyAsync         6.43%        1.552s         6.43%        1.552s      37.688us       0.000us         0.00%       0.000us       0.000us           0 b           0 b           0 b           0 b         41192  
+                                           aten::matmul         0.03%       8.375ms         6.18%        1.492s       5.424ms       0.000us         0.00%      22.259ms      80.942us           0 b           0 b       1.73 Gb           0 b           275  
+                                               aten::mm         0.21%      51.296ms         6.17%        1.489s       4.444ms     117.239ms         4.00%     117.239ms     349.967us           0 b           0 b       4.08 Gb       4.08 Gb           335  
+                                               cudaFree         5.90%        1.424s         5.90%        1.424s     356.062ms       0.000us         0.00%       0.000us       0.000us           0 b           0 b           0 b           0 b             4  
+                                               aten::to         0.35%      84.594ms         5.14%        1.239s     149.490us       0.000us         0.00%     166.648ms      20.105us      11.00 Mb           0 b      44.05 Gb           0 b          8289  
+                                         aten::_to_copy         0.84%     201.650ms         4.78%        1.155s     141.573us       0.000us         0.00%     166.648ms      20.435us      11.00 Mb           0 b      44.05 Gb           0 b          8155  
+                                           aten::select         2.83%     683.034ms         3.54%     854.815ms      16.689us       0.000us         0.00%       0.000us       0.000us           0 b           0 b           0 b           0 b         51220  
+                                          aten::reshape         0.31%      74.413ms         3.34%     806.619ms     201.655us       0.000us         0.00%      17.317ms       4.329us           0 b           0 b       2.26 Gb           0 b          4000  
+                                            aten::copy_         1.80%     433.995ms         3.07%     741.312ms      60.728us     185.424ms         6.32%     187.298ms      15.343us           0 b     -11.00 Mb           0 b           0 b         12207  
+                                            aten::clone         0.37%      88.486ms         2.84%     684.072ms     174.064us       0.000us         0.00%      18.635ms       4.742us           0 b           0 b       2.56 Gb           0 b          3930  
+                                          aten::type_as         0.19%      45.499ms         2.53%     610.816ms     157.589us       0.000us         0.00%      46.759ms      12.064us           0 b           0 b       9.49 Gb           0 b          3876  
+                                    aten::empty_strided         1.91%     460.748ms         1.97%     474.228ms      56.896us       0.000us         0.00%       0.000us       0.000us      11.00 Mb      11.00 Mb      48.58 Gb      48.58 Gb          8335  
+                                             aten::add_         1.04%     250.474ms         1.76%     424.359ms      56.014us      31.290ms         1.07%      31.290ms       4.130us           0 b           0 b           0 b           0 b          7576  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 24.129s
+Self CUDA time total: 2.935s
+```
+
+***CUDA time total (thread 1)***
+
+```
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg       CPU Mem  Self CPU Mem      CUDA Mem  Self CUDA Mem    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+ncclKernel_SendRecv_RING_SIMPLE_Sum_int8_t(ncclWorkE...         0.00%       0.000us         0.00%       0.000us       0.000us        1.861s        63.43%        1.861s      31.025ms           0 b           0 b           0 b           0 b            60  
+                                                eval_lm        28.68%        6.920s        99.41%       23.986s       23.986s       0.000us         0.00%        1.073s        1.073s    -192.10 Kb    -192.16 Kb      11.03 Mb      -3.07 Gb             1  
+                                     TransformerDecoder         0.11%      27.132ms        51.31%       12.381s        2.476s       0.000us         0.00%        1.018s     203.577ms         -20 b     -32.00 Mb       1.16 Gb    -409.12 Mb             5  
+                       TransformerDecoderLayer with MoE         0.34%      81.178ms        29.16%        7.036s     234.543ms       0.000us         0.00%     944.564ms      31.485ms        -120 b        -600 b     273.04 Mb     -19.13 Gb            30  
+                                               MoELayer         6.01%        1.450s        28.30%        6.828s     227.591ms       0.000us         0.00%     899.195ms      29.973ms        -120 b        -584 b      18.95 Gb    -105.64 Gb            30  
+                                           aten::linear         0.65%     157.940ms        15.08%        3.638s     453.959us       0.000us         0.00%     430.346ms      53.693us           0 b           0 b      13.65 Gb           0 b          8015  
+                                            aten::addmm         4.76%        1.149s         7.19%        1.735s     224.223us     404.881ms        13.80%     404.881ms      52.310us           0 b           0 b      11.92 Gb      11.92 Gb          7740  
+                                            aten::copy_         1.80%     433.995ms         3.07%     741.312ms      60.728us     185.424ms         6.32%     187.298ms      15.343us           0 b     -11.00 Mb           0 b           0 b         12207  
+            volta_fp16_s884gemm_fp16_64x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us     178.657ms         6.09%     178.657ms      45.821us           0 b           0 b           0 b           0 b          3899  
+                                               aten::to         0.35%      84.594ms         5.14%        1.239s     149.490us       0.000us         0.00%     166.648ms      20.105us      11.00 Mb           0 b      44.05 Gb           0 b          8289  
+                                         aten::_to_copy         0.84%     201.650ms         4.78%        1.155s     141.573us       0.000us         0.00%     166.648ms      20.435us      11.00 Mb           0 b      44.05 Gb           0 b          8155  
+            volta_fp16_s884gemm_fp16_128x64_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us     150.257ms         5.12%     150.257ms      39.129us           0 b           0 b           0 b           0 b          3840  
+                                               aten::mm         0.21%      51.296ms         6.17%        1.489s       4.444ms     117.239ms         4.00%     117.239ms     349.967us           0 b           0 b       4.08 Gb       4.08 Gb           335  
+void at::native::unrolled_elementwise_kernel<at::nat...         0.00%       0.000us         0.00%       0.000us       0.000us      91.726ms         3.13%      91.726ms      23.340us           0 b           0 b           0 b           0 b          3930  
+                                     MultiheadAttention         0.21%      49.825ms         6.80%        1.642s      27.361ms       0.000us         0.00%      84.565ms       1.409ms        -240 b      -1.17 Kb     182.25 Mb     -12.32 Gb            60  
+void at::native::unrolled_elementwise_kernel<at::nat...         0.00%       0.000us         0.00%       0.000us       0.000us      74.098ms         2.53%      74.098ms       6.366us           0 b           0 b           0 b           0 b         11640  
+                                              aten::bmm         0.06%      15.680ms         0.14%      34.982ms     194.344us      73.538ms         2.51%      73.538ms     408.544us           0 b           0 b      29.94 Gb           0 b           180  
+                    TransformerDecoderLayer without MoE         0.09%      20.704ms         6.72%        1.621s      54.018ms       0.000us         0.00%      60.959ms       2.032ms        -120 b        -600 b     275.25 Mb      -2.38 Gb            30  
+                                             aten::gelu         0.92%     221.000ms         1.28%     308.808ms      79.795us      53.650ms         1.83%      53.650ms      13.863us           0 b           0 b      18.82 Gb      18.82 Gb          3870  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us      53.650ms         1.83%      53.650ms      13.863us           0 b           0 b           0 b           0 b          3870  
+void gemmk1_kernel<float, 256, 5, false, false, fals...         0.00%       0.000us         0.00%       0.000us       0.000us      51.934ms         1.77%      51.934ms     865.567us           0 b           0 b           0 b           0 b            60  
+void at::native::unrolled_elementwise_kernel<at::nat...         0.00%       0.000us         0.00%       0.000us       0.000us      50.616ms         1.72%      50.616ms      12.498us           0 b           0 b           0 b           0 b          4050  
+                                              aten::add         0.84%     202.625ms         1.19%     287.287ms      86.820us      49.291ms         1.68%      49.291ms      14.896us          44 b          40 b      12.43 Gb      12.43 Gb          3309  
+volta_fp16_s884gemm_fp16_128x128_ldg8_f2f_stages_32x...         0.00%       0.000us         0.00%       0.000us       0.000us      48.766ms         1.66%      48.766ms       1.626ms           0 b           0 b           0 b           0 b            30  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us      47.035ms         1.60%      47.035ms      25.247us           0 b           0 b           0 b           0 b          1863  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 24.129s
+Self CUDA time total: 2.935s
+
+```
+
+### Next steps
+First, we should look into whether it's possible to profile all processes jointly in a automatic manner. Perhaps it's possible to pass the profiler object from the context to the threads? 
+
+Another next step is to enable model parallelism (using Megatron), and see what changes. 
+
+Finally, we will want to run benchmarking at a larger scale, and get results for multiple values of the parametes.
