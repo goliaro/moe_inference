@@ -302,3 +302,19 @@ cfg:
 ```
 
 </details>
+
+
+## Profiling results
+An initial profiling of the `fairseq_cli.eval_lm` script using the 15B pre-trained MoE-GPT model, yielded the results that are available in the [results](../results) folder.
+
+### Profiling technique
+The profiling was done as follows. Using the [Pytorch profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html), we wrapped the `eval_lm` function in the profiler context `with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], profile_memory=True, record_shapes=True) as prof:` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/443be319435410ed8a63de0ae2ec25ba5cf6adaf/fairseq_cli/eval_lm.py#L320)), and tagged several functions of interest using the `with record_function("<CODE SECTION NAME>"):` directive. In particular, we tagged the `forward()` method of the following layers (please refer above for the structure of the model):
+- `TransformerDecoder`
+	- `TransformerDecoderLayer without MoE` (for those layers without a MoE)
+		- `MultiheadAttention`
+	- `TransformerDecoderLayer MoE` (for those layers with a MoE)
+		- `MultiheadAttention`
+		- `MoELayer` 
+The inference is performed using data parallelism with N=4 threads, each using its own V100 GPU. Each thread is spawned via `torch.multiprocessing.spawn` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/443be319435410ed8a63de0ae2ec25ba5cf6adaf/fairseq/distributed/utils.py#L362)). We intially tried wrapping the entire main function (before the call to spawn) into the profiler context, in the hope that the profiler could automatically gather data from the N=4 processes and merge them, but that didn't work, so we resorted to profiling each thread individually and saving the results to separate files.
+
+### Analysis
