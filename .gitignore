@@ -129,6 +129,6 @@ dmypy.json
 .pyre/
 
 # preprocessed data and checkpoints
-data
+**/data/
 *.zip
 *.tar.gz

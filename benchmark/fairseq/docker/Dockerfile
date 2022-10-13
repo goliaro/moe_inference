@@ -27,6 +27,7 @@ RUN rm -rf /var/lib/apt/lists/* \
         htop \
 	    nano
 
+ADD https://api.github.com/repos/gabrieleoliaro/fairseq/git/refs/heads/moe ff_version.json
 RUN git clone -b moe https://github.com/gabrieleoliaro/fairseq && cd fairseq && pip install --editable ./
 
 RUN pip install boto3 iopath fairscale
