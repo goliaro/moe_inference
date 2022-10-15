@@ -16,7 +16,7 @@ def replace_tensors_with_placeholders(checkpoint):
 
 
 def pretty_print_dictionary(dictionary):
-    return json.dumps(dictionary, indent=2, default=str)
+    return json.dumps(dictionary, indent=2, default=str, sort_keys=True)
 
 
 if __name__ == "__main__":
@@ -42,10 +42,9 @@ if __name__ == "__main__":
         print(f"Checkpoint file {checkpoint_path} does not exist")
         exit()
     if os.path.isfile(output_file):
-        print(
-            f"Warning: output file {output_file} already exists! Are you ok with overwriting? [y,n]"
+        r = input(
+            f"Warning: output file {output_file} already exists! Are you ok with overwriting [y,n]? "
         )
-        r = input()
         if r != "y":
             exit()
 
