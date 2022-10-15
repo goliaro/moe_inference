@@ -8,7 +8,7 @@ The Fairseq MoE model created when loading the MoE 15B checkpoint has essentiall
 
 
 <details>
-<summary>**Full structure of the model**</summary>
+<summary><b>Full structure of the model</b></summary>
 <br>
 
 ```
@@ -210,7 +210,7 @@ TransformerLanguageModel(
 Each MoE layer, whose details have been omitted in the printout above for the sake of conciseness, has the following structure:
 
 <details>
-<summary>**MoE layer**</summary>
+<summary><b>MoE layer</b></summary>
 <br>
 
 ```

@@ -19,7 +19,7 @@ So far, we have evaluated Fairseq using the [fairseq_cli/eval_lm.py](https://git
 For the language modeling task (default task for the eval_lm script), the configs are available below:
 
 <details>
-<summary>**model configs** (which determine the model type/structure) </summary>
+<summary><b>model configs</b> (which determine the model type/structure) </summary>
 <br>
 
 ```
@@ -29,7 +29,7 @@ For the language modeling task (default task for the eval_lm script), the config
 </details>
 
 <details>
-<summary>**The** **full set of configs** used for the evaluation task</summary>
+<summary><b>The full set of configs</b> used for the evaluation task</summary>
 <br>
 
 ```
