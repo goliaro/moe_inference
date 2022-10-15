@@ -3,9 +3,9 @@
 This document contains a walkthrough the 15B-parameters pre-trained MoE language model from Fairseq. The checkpoint is [available here](https://github.com/facebookresearch/fairseq/tree/main/examples/moe_lm). 
 
 ## Model architecture
-The Fairseq MoE model created when loading the MoE 15B checkpoint has essentially a GPT structure, with 12 `TransformerDecoderLayers` where a MoE is inserted in every other layer. No encoder layer is used. Each MoE has a Top 2 gating function and 128 experts.
+The Fairseq MoE model from the MoE 15B checkpoint has essentially a GPT structure, with 12 `TransformerDecoderLayers` where a MoE is inserted in every other layer. No encoder layer is used. Each MoE has a Top 2 gating function and 512 experts in total. 
 
-
+The default expert parallelism is such that each process (corresponding to a GPU) will be assigned a number of expert that is equal to `int(checkpoint_files_count / world_size)) * 8` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/79b0f43322c97e38a7d1de346b97edac135766f8/fairseq/moe_checkpoint_utils.py#L141)), where `checkpoint_files_count=64` and `world_size` is the number of processes/GPUs made available to Fairseq. In the original setup, `world_size=8`, so each process/GPU was assigned `int(64/8)*8=64 experts`, for a total of `64*8=512` experts. In our case, we used a `world_size=4`, so each process/GPU was assigned `int(64/4)*8=128 experts` (see below), for a total of `128*4=512` experts.
 
 <details>
 <summary><b>Full structure of the model</b></summary>
