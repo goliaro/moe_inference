@@ -1,16 +1,25 @@
 # Fairseq MoE 
 
-## Parallelism
+This document contains an analysis of what we discovered when it comes to the design, implementation, and performance of the Fairseq inference framework
+
+## Parallelism in Fairseq MoE (inference)
 
 Fairseq by default uses data parallelism only; model parallelism is supported by passing a `model_parallelism_size` parameter greater than 1. Model parallel is implemented using Megatron, in particular, the framework loads Megatron as a submodule using [this fork](https://github.com/ngoyal2707/Megatron-LM) (branch `fairseq`).
 
-## Model architecture 
-The Fairseq MoE model created when loading the MoE 15B checkpoint has essentially a GPT structure, with 12 `TransformerDecoderLayers` where a MoE is inserted in every other layer. No encoder layer is used. Each MoE has a Top 2 gating function and 128 experts. 
+## Synchronization/communication collectives
 
-For the language modeling task (default task for the eval_lm script), the model configs (which determine the model type/structure) are as follows:
+TODO: figure out what synchronization collectives are used. Eg: SPMD, gang-scheduling, MPMD, etc...?
+
+## Profiling & Benchmarking Evaluation 
+
+So far, we have evaluated Fairseq using the [fairseq_cli/eval_lm.py](https://github.com/gabrieleoliaro/fairseq/blob/moe/fairseq_cli/eval_lm.py) script from the `fairseq` repository (branch `moe`). The original purpose of the script was to evaluate the accuracy of a language model trained with Fairseq. To do so, the script needs to perform inference for each input sample. In the future, we will likely need to modify/extend the script to focus more on throughput/accuracy benchmarking, but right now we are just trying to identify the bottlenecks of the system. In addition to `eval_lm.py`, `fairseq` also comes with other inference scripts, such as [fairseq_cli/generate.py](https://github.com/gabrieleoliaro/fairseq/blob/moe/fairseq_cli/generate.py). In the future, we may also want to compare `eval_lm.py` with `generate.py`, and figure out which script is best to use for our purposes.
+
+### `eval_lm.py` configs
+
+For the language modeling task (default task for the eval_lm script), the configs are available below:
 
 <details>
-<summary>Toggle here </summary>
+<summary>**model configs** (which determine the model type/structure) </summary>
 <br>
 
 ```
@@ -19,262 +28,8 @@ For the language modeling task (default task for the eval_lm script), the model 
 
 </details>
 
-Here is the full structure of the model:
-
 <details>
-<summary>Toggle here </summary>
-<br>
-
-```
-TransformerLanguageModel(
-  (decoder): TransformerDecoder(
-    (dropout_module): FairseqDropout(p=0.1)
-    (embed_tokens): Embedding(50264, 768, padding_idx=1)
-    (embed_positions): SinusoidalPositionalEmbedding()
-    (layers): ModuleList(
-      (0): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (1): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (2): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (3): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (4): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (5): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (6): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (7): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (8): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (9): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (10): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (activation_dropout_module): FairseqDropout(p=0.0)
-        (fc1): Linear(in_features=768, out_features=3072, bias=True)
-        (fc2): Linear(in_features=3072, out_features=768, bias=True)
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-      (11): TransformerDecoderLayer(
-        [checkpointed] 
-        (dropout_module): FairseqDropout(p=0.1)
-        (self_attn): MultiheadAttention(
-          (dropout_module): FairseqDropout(p=0.1)
-          (k_proj): Linear(in_features=768, out_features=768, bias=True)
-          (v_proj): Linear(in_features=768, out_features=768, bias=True)
-          (q_proj): Linear(in_features=768, out_features=768, bias=True)
-          (out_proj): Linear(in_features=768, out_features=768, bias=True)
-        )
-        (self_attn_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-        (moe_layer): MOELayer()
-        (final_layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-      )
-    )
-    (layer_norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
-    (output_projection): Linear(in_features=768, out_features=50264, bias=False)
-  )
-)
-```
-
-</details>
-
-Each MoE layer, whose details have been omitted in the printout above for the sake of conciseness, has the following structure:
-
-<details>
-<summary>Toggle here</summary>
-<br>
-
-```
-(moe_layer): MOELayer(
-	(gate): Top2Gate(
-		(wg): Linear(in_features=768, out_features=512, bias=False)
-	)
-	(experts): ModuleList(
-		(0): FeedForwardNetwork(
-			(activation_dropout_module): FairseqDropout(p=0.0)
-			(fc1): Linear(in_features=768, out_features=3072, bias=True)
-			(fc2): Linear(in_features=3072, out_features=768, bias=True)
-			(dropout_module): FairseqDropout(p=0.1)
-		)
-		(1): FeedForwardNetwork(
-			(activation_dropout_module): FairseqDropout(p=0.0)
-			(fc1): Linear(in_features=768, out_features=3072, bias=True)
-			(fc2): Linear(in_features=3072, out_features=768, bias=True)
-			(dropout_module): FairseqDropout(p=0.1)
-		)
-
-		...
-		...
-		...
-
-		(126): FeedForwardNetwork(
-			(activation_dropout_module): FairseqDropout(p=0.0)
-			(fc1): Linear(in_features=768, out_features=3072, bias=True)
-			(fc2): Linear(in_features=3072, out_features=768, bias=True)
-			(dropout_module): FairseqDropout(p=0.1)
-		)
-		(127): FeedForwardNetwork(
-			(activation_dropout_module): FairseqDropout(p=0.0)
-			(fc1): Linear(in_features=768, out_features=3072, bias=True)
-			(fc2): Linear(in_features=3072, out_features=768, bias=True)
-			(dropout_module): FairseqDropout(p=0.1)
-		)
-	)
-)
-
-```
-
-</details>
-
-## Eval_lm configs
-
-The full set of configs used for the evaluation task is available here.
-
-<details>
-<summary>Toggle here</summary>
+<summary>**The** **full set of configs** used for the evaluation task</summary>
 <br>
 
 ```
@@ -304,9 +59,6 @@ cfg:
 </details>
 
 
-## Profiling results
-An initial profiling of the `fairseq_cli.eval_lm` script using the 15B pre-trained MoE-GPT model, yielded the results that are available in the [results](../results) folder.
-
 ### Profiling technique
 The profiling was done as follows. Using the [Pytorch profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html), we wrapped the `eval_lm` function in the profiler context `with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], profile_memory=True, record_shapes=True) as prof:` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/443be319435410ed8a63de0ae2ec25ba5cf6adaf/fairseq_cli/eval_lm.py#L320)), and tagged several functions of interest using the `with record_function("<CODE SECTION NAME>"):` directive. In particular, we tagged the `forward()` method of the following layers (please refer above for the structure of the model):
 - `TransformerDecoder`
@@ -317,7 +69,10 @@ The profiling was done as follows. Using the [Pytorch profiler](https://pytorch.
 		- `MoELayer` 
 The inference is performed using data parallelism with N=4 threads, each using its own V100 GPU. Each thread is spawned via `torch.multiprocessing.spawn` ([see here](https://github.com/gabrieleoliaro/fairseq/blob/443be319435410ed8a63de0ae2ec25ba5cf6adaf/fairseq/distributed/utils.py#L362)). We intially tried wrapping the entire main function (before the call to spawn) into the profiler context, in the hope that the profiler could automatically gather data from the N=4 processes and merge them, but that didn't work, so we resorted to profiling each thread individually and saving the results to separate files.
 
-### Analysis
+### Profiling results
+An initial profiling of the `fairseq_cli.eval_lm` script using [the 15B pre-trained MoE-GPT model](./en_moe_lm_15b.md), yielded the results that are available in the [results](../benchmark/fairseq/results) folder.
+
+#### Analysis
 Among the results, the two most interesting files are those recording the functions sorted by total cpu time, and those recording the functions sorted by total cuda time. For each of these two views, we have one file for each threads. The results are similar, so we will just include one file (using thread 1) for each of the two cases.
 
 ***CPU time total (thread 1)***
