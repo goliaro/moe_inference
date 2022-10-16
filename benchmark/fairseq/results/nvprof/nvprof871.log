@@ -1,0 +1,5 @@
+==871== NVPROF is profiling process 871, command: /opt/conda/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=67, pipe_handle=73) --multiprocessing-fork
+==871== Profiling application: /opt/conda/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=67, pipe_handle=73) --multiprocessing-fork
+==871== Profiling result:
+No kernels were profiled.
+==871== Warning: Some profiling data are not recorded.

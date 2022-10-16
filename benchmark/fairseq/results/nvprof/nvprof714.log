@@ -1,0 +1,4 @@
+==714== NVPROF is profiling process 714, command: python -m fairseq_cli.eval_lm /mnt/data-bin/wikitext-103 --path /mnt/en_moe_lm_15b/model.pt --gen-subset valid --sample-break-mode none --tokens-per-sample 2048 --batch-size 1 --fp16 --output-word-probs --is-moe --distributed-world-size 4 --max-valid-step
+==714== Profiling application: python -m fairseq_cli.eval_lm /mnt/data-bin/wikitext-103 --path /mnt/en_moe_lm_15b/model.pt --gen-subset valid --sample-break-mode none --tokens-per-sample 2048 --batch-size 1 --fp16 --output-word-probs --is-moe --distributed-world-size 4 --max-valid-step
+==714== Profiling result:
+No kernels were profiled.

@@ -1,0 +1,5 @@
+==870== NVPROF is profiling process 870, command: /opt/conda/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=78, pipe_handle=84) --multiprocessing-fork
+==870== Profiling application: /opt/conda/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=78, pipe_handle=84) --multiprocessing-fork
+==870== Profiling result:
+No kernels were profiled.
+==870== Warning: Some profiling data are not recorded.
