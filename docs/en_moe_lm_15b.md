@@ -259,7 +259,7 @@ Each MoE layer, whose details have been omitted in the printout above for the sa
 ## Checkpoint details
 The `en_moe_lm_15b.tar.gz` tarball contains 65 files: `model-shared.pt` and 64 files of the form `model-rank-N.pt`, with `N={0,...,63}`.
 
-A jsonified version of all the files is [available here]() for inspection. All large tensors have been removed using [this script](../utils/jsonify_pretrained_checkpoint.py) for conciseness. By comparing them, we can see that the contents of all the checkpoint files only differs when it comes to the `model` member of the dictionary. 
+A jsonified version of all the files is [available here](https://drive.google.com/drive/folders/1Y0A6lrY4IcaRWQX2PudcvbxiyX9KNU-X?usp=sharing) for inspection. All large tensors have been removed using [this script](../utils/jsonify_pretrained_checkpoint.py) for conciseness. By comparing them, we can see that the contents of all the checkpoint files only differs when it comes to the `model` member of the dictionary. 
 
 In particular, each of the `model-rank-N.pt` files contains the parameters from 8 experts from each of the 6 MoE layers (i.e. each `model-rank-N.pt` contains 6x8=48 experts). When combining all 64 `model-rank-N.pt` files, we have 8x64=512 experts available for each MoE layer, which matches the first dimension (512) of the weight matrix of each gating network.
 
