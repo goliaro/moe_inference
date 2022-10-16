@@ -4,7 +4,8 @@ set -e
 DATA_PATH=/mnt/data-bin/wikitext-103
 MODEL_PATH=/mnt/en_moe_lm_15b/model.pt
 #export NCCL_DEBUG=INFO
-python -m fairseq_cli.eval_lm $DATA_PATH \
+# To profile with the torch profiler, remove `nvprof --profile-child-processes --print-gpu-trace --log-file nvprof%p.log` prefix
+nvprof --profile-child-processes --print-gpu-trace --log-file nvprof%p.log python -m fairseq_cli.eval_lm $DATA_PATH \
   --path $MODEL_PATH \
   --gen-subset valid \
   --sample-break-mode none \
