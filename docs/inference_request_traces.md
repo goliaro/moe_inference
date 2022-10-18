@@ -12,3 +12,7 @@ $$n_k \sim Uniform([32,512])$$
 $$g_k \sim Uniform([1,128])$$
 
 In summary, each request $r_k$ is generated using the three parameters $t_k$ (arrival time), $n_k$ (\# input tokens) and $g_k$ (\# output tokens). The authors did not specify which values they used for $\lambda$, nor how the input tokens were generated.
+
+## Proposed approach
+
+To evaluate the performance of our system, we could use a similar approach as above, but instead of generating input samples artificially with $n_k$ tokens sampled from a uniform distribution, we could use a real dataset such as `wikitext-103` and larger ones. We could generate the input samples by grouping the dataset entries by number of tokens and then for each request, pick one entry (with or without replacement) from one of the groups. The group itself could be picked randomly according to a uniform distribution.
