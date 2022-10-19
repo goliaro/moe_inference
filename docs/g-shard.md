@@ -10,7 +10,7 @@ The G-Shard MoE architecture (see Fig.1) consists of a transformer _MoE-fied_ as
 * The output of each MoE layer is the average of the output of all experts
 
 <p align = "center">
-<img src="./figures/g_shard_architecture.png" height="300">
+<img src="./figures/g_shard_architecture.png">
 </p>
 <p align = "center">
 Fig.1 - The G-Shard MoE architecture
@@ -25,7 +25,7 @@ The full gating algorithm is available below (see Algorithm. 2):
 3. To balance the tokens among the experts, an auxiliary loss term is used. Ideally, we'd want to add a term that minimizes the mean square of the fradction of tokens routed to each expert, but this expression is not differentiable since it involves the Top2 function, so we use an approximation involving the mean gates per experts.
 
 <p align = "center">
-<img src="./figures/g_shard_alg_1.png" height="300">
+<img src="./figures/g_shard_alg_1.png">
 </p>
 <p align = "center">
 Algorithm 1 - The G-Shard gating algorithm
