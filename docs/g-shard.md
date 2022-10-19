@@ -10,7 +10,7 @@ The G-Shard MoE architecture (see Fig.1) consists of a transformer _MoE-fied_ as
 * The output of each MoE layer is the average of the output of all experts
 
 <p align = "center">
-<img src="./figures/g_shard_architecture.png">
+<img src="./figures/g_shard_architecture.png", height="400px">
 </p>
 <p align = "center">
 Fig.1 - The G-Shard MoE architecture
@@ -26,7 +26,7 @@ The full gating algorithm is available below (see Algorithm. 2):
 4. To conserve expert capacity, the gating function uses a **random routing** approach: it routes each token to the second expert with a probability proportional to the weight. 
 
 <p align = "center">
-<img src="./figures/g_shard_alg_1.png">
+<img src="./figures/g_shard_alg_1.png", height="400px">
 </p>
 <p align = "center">
 Algorithm 1 - The G-Shard gating algorithm
@@ -40,7 +40,7 @@ Much of the G-Shard MoE layer implementation uses the einsum notation. An easy-t
 The paper makes the case that SPMD is necessary to achieve high scalability, and that MPMD in inefficient because in MPMD the number of nodes in the computational graph increases linearly with the number of devices to be used. See Fig.2 for more details.
 
 <p align = "center">
-<img src="./figures/g_shard_SPMD.png">
+<img src="./figures/g_shard_SPMD.png", height="300px">
 </p>
 <p align = "center">
 Fig.2 - The case for SPMD in G-Shard
