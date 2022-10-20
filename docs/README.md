@@ -23,5 +23,5 @@ We have documentation on the MoE models we are using for inference. Fairseq impl
 ## Implementation
 We are currently planning on building our framework on top of Legion and we may reuse parts of FlexFlow.
 
-## Legion
+### Legion
 For an overview of Legion: [legion.md](./legion.md)
