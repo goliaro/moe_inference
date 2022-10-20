@@ -6,7 +6,7 @@ We have documentation on the other inference frameworks we are benchmarking. Mor
 
 - Fairseq platform: [fairseq_moe](./fairseq_moe.md).
 - DeepSpeed-MoE platform: [deepspeed_moe](./deepspeed_moe.md)
-- FasterTransformer platform: [faster_transformers_moe](./faster_transformers_moe.md). *Note that FasterTransformer does not natively support MoE*
+- FasterTransformer platform: [faster_transformer_moe](./faster_transformer_moe.md). *Note that FasterTransformer does not natively support MoE*
 
 ## MoE architectures
 We have documentation on the MoE models we are using for inference. Fairseq implements MoE using the G-Shard model, for which we have a summary doc. We also have docs on Fairseq's 15B-parameters LM MoE model.
