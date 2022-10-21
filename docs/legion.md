@@ -1,6 +1,7 @@
 # Legion
 
 Legion is an asynchronous, task-based distributed execution engine based on the following concepts:
+
 * Tasks
 * Regions
 * Partitioning
@@ -9,7 +10,31 @@ Legion is an asynchronous, task-based distributed execution engine based on the 
 * Mapping
 
 ### Tasks
-Tasks are the basic units of computations,
+Tasks are the basic units of the Legion parallel computation, their execution is non-preemptible and they can have multiple variants for each kind of processor (CPU vs GPU) that can be used, as well as for each memory layout of the arguments. Every task should be assigned a task ID and registerd with the runtime before the runtime starts. A particular task is designated as the **top-level task**, and it will be invoked by the start method. Tasks can call any C++ function, including those allocating/deallocating memory, but they cannot use packages other than Legion to implement parallelism or concurrency.
+
+**Task Registration**: To register a task with the runtime, we need to provide the name of the task, the task ID, the kind of processor that can run the task (or other constraints), and pass two booleans indicting whether the task is launchable as a single task and/or as part of an index launch
+
+**Task arguments and signature**: A task's signature contains an object representing the task, a verctor of physical region instances (used to pass data between tasks), a context object, with the task's metadata, and a pointer to the runtime. Arguments should not contain C++ pointers, and tasks should not refer global variables
+
+#### Subtasks
+Subtasks are tasks called by other tasks. To execute a subtask, the parent creates a `TaskLauncher` object, which takes two arguments: the ID of the task to be launched and `TaskArgument` object holding any arguments (and their size), which will be passed by value. TaskArgument objects should only be used for passing small amounts of data and cannot contain pointers nor futures. 
+
+**Executing a task**: to execute a task, the parent calls `runtime->execute_task`, with the `TaskLauncher` as an argument. This method is not blocking, meaning that all tasks are launched asynchronously by their parent. The parent task will, however, wait until all children return before terminating.
+
+#### Futures
+Futures are placeholders for the results returned by tasks, since tasks are executed asynchronously. If we read the value of a future, the future will be immediately evaluated, with the parent blocking until the value is returned. 
+
+#### Points, Rectangles, Domains
+Legion defines the points, rectangles and domains types for launching sets of tasks, as well as other related applications. Various operations are defined on these types.
+
+**Point**: a point is a tuple of $n$ integers
+
+**Rectangle**: a rectangle is a set of points. It is defined using two points A and B, and includes all points that are greater or equal to A and less or equal to B.
+
+**Domains**: a domain is equivalent to a rectangle, but with less type checking.
+
+#### Index Launches
+An index launch is a mechanism to launch multiple tasks at once, with an improved efficiency. In general, index launches are only meant to execute multiple instances of the same task in parallel. Index launches make use of a `IndexLauncher` (counterpart of the `TaskLauncher`) and are executed with `runtime->execute_index_space` (instead of `runtime->execute_task`). To pass arguments to tasks launched as part of an index launch, Legion uses an `ArgumentMap`, mapping each point in the task index space to an argument for the corresponding task. Similarly, the exeutor does not return a single future but a `FutureMap`, mapping each point in the index space to the future returned by the corresponding task.
 
 ### Regions
 
