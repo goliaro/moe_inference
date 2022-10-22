@@ -2,12 +2,12 @@
 
 Legion is an asynchronous, task-based distributed execution engine based on the following concepts:
 
-* Tasks
-* Regions
-* Partitioning
-* Control Replication
-* Coherence
-* Mapping
+* [Tasks](#tasks)
+* [Regions](#regions)
+* [Partitioning](#partitioning)
+* [Control Replication](#control-replication)
+* [Coherence](#coherence)
+* [Mapping](#mapping)
 
 ### Tasks
 Tasks are the basic units of the Legion parallel computation, their execution is non-preemptible and they can have multiple variants for each kind of processor (CPU vs GPU) that can be used, as well as for each memory layout of the arguments. Every task should be assigned a task ID and registerd with the runtime before the runtime starts. A particular task is designated as the **top-level task**, and it will be invoked by the start method. Tasks can call any C++ function, including those allocating/deallocating memory, but they cannot use packages other than Legion to implement parallelism or concurrency.
@@ -97,5 +97,19 @@ The **acquire** directive removes the copy restriction on the underlying region,
 
 In the most common scenario, phase barriers and the acquire/release directives are used together: phase barriers are used to enforce the proper synchronization of acquire/release.
 
-
 ### Mapping
+Mappers expose to the application those decisions that affect its performance. Legion provides a **default mapper**, and a few other pre-designed ones, but the user is encourages to write their own application-specific mapper for better performance
+
+A mapper is an abstract C++ class defining a set of pure virtual functions invoked by the Legion runtime as callback. The invokations can happen in a unpredictable order, and the degree of concurrency between mapper callbacks is controlld by the **synchronization mode** that is selected. Mappers can store arbitrary state. 
+
+**Mapper registration** consists of registering the mapper object with the runtime. This must be done before the application begins, but after the runtime is created. We can register a `CustomMapper` using `Runtime::add_registration_callback`, which takes a function pointer as an arguemnt. The function itself should take as arguments a `Machine` object, a `Runtime` pointer, and a reference to a STL set of `Processor` objects. We can register multiple callbacks by calling `Runtime::add_registration_callback` multiple times. The runtime will invoke the callback functions in the order they were added, once for each instance of the Legion runtime. In multiprocess jobs, there will be one copy of the Legion runtime per process, and thus one invocation of each callback per process.
+
+**Synchronization models** allow the user to control how a runtime instance's multiple threads should interact and whether they can invoke mapper calls for the same mapper concurrently. The synchronization model can only be set once and cannot be changed. There are three available synchronization models: 
+
+1. **serialized non rereentrant**, where calls to the mapper objext are serialized and executed atomically. If mapper calls to the runtime are preempted, no other mapper call can be invoked by the runtime
+2. **serialized reentrant**, where at most one mapper call executes at a time, but if a mapper call invokes a runtime method that preempts it, the runtime can execute another mapper call or resume the blocked call
+3. **concurrent**, where mapper calls to the same mapper object can proceed concurrently. Users can use `lock_mapper` and `unlock_mapper` to perform synchronization
+
+**Machine interface**: it allows mappers to access information about the machine on which the application is executing. This is done through a `Machine` object, defined by **Realm**, Legion's low-level portability layer (file `realm/machine.h`). The older methods for accessing the machine object are `get_all_processors` and `get_all_memories`, which populate STL data structures with the names of processors and memories on the current machine. However, these methods are not scalable. The more modern and efficient interface uses **queries**: `ProcessorQuery` and `MemoryQuery`. The mapper applies **filters** to reduce the set of processors and memories of interest, thus making the search more efficient. For example, `local_address_space` specializes the query to the local node, `only_kind` specializes to a specific kind of processor, `has_affinity` requires the search to focus on processors/memories that have a certain affinity to other processors/memories, etc. Queries can still be expensive, so it's important to memoize the results whenever possible.  
+
+#### Mapping tasks
