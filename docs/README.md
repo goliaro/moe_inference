@@ -17,7 +17,7 @@ The docs on how we generate the traces of inference requests, as well as the sol
 ### MoE architectures
 We have documentation on the MoE models we are using for inference. Fairseq implements MoE using the G-Shard model, for which we have a summary doc. We also have docs on Fairseq's 15B-parameters LM MoE model.
 
-* G-Shard architecture: [g-shard](./g-shard.md)
+* G-Shard architecture: [g-shard](./g-shard.rst)
 * Fairseq's 15B-parameters LM MoE checkpoint: [en_moe_lm_15b.md](./en_moe_lm_15b.md)
 
 ## Implementation
