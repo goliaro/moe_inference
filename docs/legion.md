@@ -1,4 +1,4 @@
-# Legion
+# Legion Overview
 
 The notes below are a summarization of [Legion's manual](https://legion.stanford.edu/pdfs/legion-manual.pdf). Legion is an asynchronous, task-based distributed execution engine based on the following concepts:
 

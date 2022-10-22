@@ -10,16 +10,13 @@ Welcome to MoE Inference's documentation!
    :maxdepth: 3
    :caption: Benchmarking
 
-   evaluation_plan
-   existing_frameworks
-   moe_architectures
+   benchmarking
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Design and Implementation
 
-   ..design
-   legion
+   design_and_implementation
 
 
 
