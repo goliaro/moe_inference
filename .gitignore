@@ -132,3 +132,5 @@ dmypy.json
 **/data/
 *.zip
 *.tar.gz
+
+_build
