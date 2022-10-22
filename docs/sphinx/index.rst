@@ -11,8 +11,8 @@ Welcome to MoE Inference's documentation!
    :caption: Benchmarking
 
    evaluation_plan
-   ..existing_frameworks
-   ..moe_architectures
+   existing_frameworks
+   moe_architectures
 
 .. toctree::
    :maxdepth: 2

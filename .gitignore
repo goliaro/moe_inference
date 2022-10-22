@@ -134,3 +134,4 @@ dmypy.json
 *.tar.gz
 
 _build
+_generated_rst

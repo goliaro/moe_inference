@@ -9,12 +9,15 @@ The G-Shard MoE architecture (see Fig.1) consists of a transformer _MoE-fied_ as
 * Experts consist of 2 fully-connected FFN with ReLu activation
 * The output of each MoE layer is the average of the output of all experts
 
-<p align = "center">
+<!-- <p align = "center">
 <img src="./figures/g_shard_architecture.png", height="400px">
 </p>
 <p align = "center">
 Fig.1 - The G-Shard MoE architecture
-</p>
+</p> -->
+.. image:: ./figures/g_shard_architecture.png
+  :width: 400
+Fig.1 - The G-Shard MoE architecture
 
 
 ## Gating function

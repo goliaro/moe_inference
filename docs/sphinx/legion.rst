@@ -2,5 +2,5 @@
 Legion
 ****************
 
-.. mdinclude:: ../legion.md
+.. include:: ./_generated_rst/legion.rst
    :start-line: 3

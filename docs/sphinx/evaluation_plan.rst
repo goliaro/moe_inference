@@ -2,5 +2,5 @@
 Evaluation plan
 ****************
 
-.. mdinclude:: ../inference_request_traces.md
+.. include:: ./_generated_rst/inference_request_traces.rst
    :start-line: 3
