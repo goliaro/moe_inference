@@ -129,6 +129,14 @@ Mapping tasks is the most important role of the mapper. When a task is launched,
 5. `map_task` maps the tasks's region arguments and selects the variant to use, after which the task will actually run on one the selected processes. It takes ans input a vector of vectors of valid instances, each containing alida data for the corresponding region requirement. The `pre_mapped` region holds the indices of region requirements that are already satisfied, and don't need to be remapped. The callback will need to fill in:
 	* `targer_procs`, the processes that can execute the task. The runtime will execute the task on the first one to become available
 	* `chosen_variant`: the variant of the task to use
-	* `chosen_instances`
+	* `chosen_instances`: the instances to use fro thr task. The values returned should be chosen from the ones in `valid_instances`, or the mapper can create new physical instances by calling `create_physical_instance` and fill the new instances with data from existing instances using `select_task_sources`.
+	*  `output_targets`: if the region is strictly an output region
+	*  `futures_locations`: the memory for holding the futures produced by the task
+	*  `untracked_valid_regions`: a set of indices of read-only regions that should be marked for garbage collection after the task is ready
+	*  `postmap_task`
 
-#####
+##### Virtual mappings
+Virtual mappings are used for logical region arguments that are not used by a task, but only passed as an argument to a subtask
+
+#### Profiling
+Most profiling is implemented by the `Realm` runtime, and can be turned on by passing the fla `-lg:prof` to the Legion runtime. More fine-grained profiling can be enabled throguh the type `ProfileRequest` and its public method `add_measurement()`
