@@ -34,11 +34,12 @@ RUN apt-key del 7fa2af80 && \
     	apt-get install -y --no-install-recommends nsight-systems-2022.4.2
 
 # To profile with the Torch Profiler, uncomment below :
-# ADD https://api.github.com/repos/gabrieleoliaro/fairseq/git/refs/heads/moe ff_version.json
-# RUN git clone -b moe https://github.com/gabrieleoliaro/fairseq && cd fairseq && pip install --editable ./
+ADD https://api.github.com/repos/gabrieleoliaro/fairseq/git/refs/heads/moe ff_version.json
+RUN git clone -b moe2 https://github.com/gabrieleoliaro/fairseq && cd fairseq && pip install --editable ./
+
 # To profile with the nvprof profiler, uncomment below :
-ADD https://api.github.com/repos/facebookresearch/fairseq/git/refs/heads/moe ff_version.json
-RUN git clone -b moe https://github.com/facebookresearch/fairseq && cd fairseq && pip install --editable ./
+#ADD https://api.github.com/repos/facebookresearch/fairseq/git/refs/heads/moe ff_version.json
+#RUN git clone -b moe https://github.com/facebookresearch/fairseq && cd fairseq && pip install --editable ./
 
 RUN pip install boto3 iopath fairscale
 
