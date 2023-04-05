@@ -135,3 +135,5 @@ dmypy.json
 
 _build
 _generated_rst
+
+.DS_Store
