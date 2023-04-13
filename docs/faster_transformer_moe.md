@@ -42,7 +42,7 @@ To prevent the additional work of splitting the model for model parallelism, Fas
   - uses functionalities from CuBLAS and CuTLASS libraries
   - choose different low-level algorithms using the "cublasGemmAlgo_t" input parameter
 
-## Synchronization/communication collectives
+<!-- ## Synchronization/communication collectives
 
 TODO: figure out what synchronization collectives are used. Eg: SPMD, gang-scheduling, MPMD, etc...?
 
@@ -59,9 +59,9 @@ NCCL implements GPU-accelerates collective operations:
 
 NCCL is topology-aware and the new [PXN](https://developer.nvidia.com/blog/doubling-all2all-performance-with-nvidia-collective-communication-library-2-12/) feature is introduced to deliver full bandwidth for a GPU to communicate with a NIC.
 - the communication goes through NVLink and then PCI instead of going through the CPU using QPI or other inter-CPU protocols
-- the GPU still tries to use its local NIC as much as possible, but it can reach other NICs if required.
+- the GPU still tries to use its local NIC as much as possible, but it can reach other NICs if required. -->
 
-## Implementing a MoE model in FasterTransformer
+<!-- ## Implementing a MoE model in FasterTransformer
 
 TODO: add support for MoE by writing our own implementation
 
@@ -69,7 +69,7 @@ TODO: add support for MoE by writing our own implementation
 
 [Deploying GPT-J and T5 with NVIDIA Triton Inference Server](https://developer.nvidia.com/blog/deploying-gpt-j-and-t5-with-fastertransformer-and-triton-inference-server/)
 
-[FasterTransformer docs](https://github.com/NVIDIA/FasterTransformer/tree/main/docs)
+[FasterTransformer docs](https://github.com/NVIDIA/FasterTransformer/tree/main/docs) -->
 
 ## Pretrained MoE model
 
@@ -185,6 +185,88 @@ model.layers.23.post_attention_layernorm.weight.bin
 </details>
 
 You can see how every other layer (odd-numbered layers) has a MoE component, and every other one (even-numbered layers) does not. In total, we have 12 MoE layer and 12 non-MoE layers.
+
+If we use 4 GPUs instead of 1, some of the files will be split into 4 parts, as follows (see indented files):
+
+<details>
+<summary><b>1-GPU converted FasterTransformer checkpoint</b></summary>
+<br>
+
+```bash
+model.wpe.bin
+model.wte.bin
+
+model.final_layernorm.bias.bin
+model.final_layernorm.weight.bin
+
+model.layers.0.attention.dense.bias.bin
+    model.layers.0.attention.dense.weight.0.bin
+    model.layers.0.attention.dense.weight.1.bin
+    model.layers.0.attention.dense.weight.2.bin
+    model.layers.0.attention.dense.weight.3.bin
+    model.layers.0.attention.query_key_value.bias.0.bin
+    model.layers.0.attention.query_key_value.bias.1.bin
+    model.layers.0.attention.query_key_value.bias.2.bin
+    model.layers.0.attention.query_key_value.bias.3.bin
+    model.layers.0.attention.query_key_value.weight.0.bin
+    model.layers.0.attention.query_key_value.weight.1.bin
+    model.layers.0.attention.query_key_value.weight.2.bin
+    model.layers.0.attention.query_key_value.weight.3.bin
+model.layers.0.input_layernorm.bias.bin
+model.layers.0.input_layernorm.weight.bin
+model.layers.0.mlp.dense_4h_to_h.bias.bin
+    model.layers.0.mlp.dense_4h_to_h.weight.0.bin
+    model.layers.0.mlp.dense_4h_to_h.weight.1.bin
+    model.layers.0.mlp.dense_4h_to_h.weight.2.bin
+    model.layers.0.mlp.dense_4h_to_h.weight.3.bin
+    model.layers.0.mlp.dense_h_to_4h.bias.0.bin
+    model.layers.0.mlp.dense_h_to_4h.bias.1.bin
+    model.layers.0.mlp.dense_h_to_4h.bias.2.bin
+    model.layers.0.mlp.dense_h_to_4h.bias.3.bin
+    model.layers.0.mlp.dense_h_to_4h.weight.0.bin
+    model.layers.0.mlp.dense_h_to_4h.weight.1.bin
+    model.layers.0.mlp.dense_h_to_4h.weight.2.bin
+    model.layers.0.mlp.dense_h_to_4h.weight.3.bin
+model.layers.0.post_attention_layernorm.bias.bin
+model.layers.0.post_attention_layernorm.weight.bin
+
+...
+...
+
+model.layers.23.attention.dense.bias.bin
+model.layers.23.mlp.moe.gate.wg.weight.bin
+    model.layers.23.attention.dense.weight.0.bin
+    model.layers.23.attention.dense.weight.1.bin
+    model.layers.23.attention.dense.weight.2.bin
+    model.layers.23.attention.dense.weight.3.bin
+    model.layers.23.attention.query_key_value.bias.0.bin
+    model.layers.23.attention.query_key_value.bias.1.bin
+    model.layers.23.attention.query_key_value.bias.2.bin
+    model.layers.23.attention.query_key_value.bias.3.bin
+    model.layers.23.attention.query_key_value.weight.0.bin
+    model.layers.23.attention.query_key_value.weight.1.bin
+    model.layers.23.attention.query_key_value.weight.2.bin
+    model.layers.23.attention.query_key_value.weight.3.bin
+model.layers.23.input_layernorm.bias.bin
+model.layers.23.input_layernorm.weight.bin
+    model.layers.23.mlp.moe.experts.dense_4h_to_h.bias.bin
+    model.layers.23.mlp.moe.experts.dense_4h_to_h.weight.0.bin
+    model.layers.23.mlp.moe.experts.dense_4h_to_h.weight.1.bin
+    model.layers.23.mlp.moe.experts.dense_4h_to_h.weight.2.bin
+    model.layers.23.mlp.moe.experts.dense_4h_to_h.weight.3.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.bias.0.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.bias.1.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.bias.2.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.bias.3.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.weight.0.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.weight.1.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.weight.2.bin
+    model.layers.23.mlp.moe.experts.dense_h_to_4h.weight.3.bin
+model.layers.23.post_attention_layernorm.bias.bin
+model.layers.23.post_attention_layernorm.weight.bin
+```
+
+</details>
 
 In addition, we get the following files: 
 
@@ -482,7 +564,7 @@ moe_layers = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23]
 
 </details>
 
-
+The `args.txt` file is identical for both the 1-GPU and 4-GPUs versions of the model. The `config.ini` only varies in the `tensor_para_size = 1` or `tensor_para_size = 4` parameter.
 
 ## Benchmarking results
 
