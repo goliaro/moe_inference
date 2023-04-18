@@ -66,6 +66,17 @@ ffn_h_to_4h_weight_shape = [global_hidden_units, local_inter_size]
 ffn_bias1_shape = [local_inter_size]
 ffn_4h_to_h_weight_shape = [local_inter_size, global_hidden_units]
 ffn_bias2_shape = [global_hidden_units,]
+print(wpe_shape)
+print(wte_shape)
+print(layernorm_shape)
+print(attn_qkv_weight_shape)
+print(attn_qkv_bias_shape)
+print(attn_out_weight_shape)
+print(attn_out_bias_shape)
+print(ffn_h_to_4h_weight_shape)
+print(ffn_bias1_shape)
+print(ffn_4h_to_h_weight_shape)
+print(ffn_bias2_shape)
 
 wte = np.fromfile(os.path.join(folder, "model.wte.bin"), dtype=float_type)
 assert(len(wte) == np.prod(wte_shape))
@@ -94,8 +105,8 @@ for n_l in range(num_layers):
         attn_qkv_proj_weight = np.fromfile(os.path.join(folder, f"model.layers.{n_l}.attention.query_key_value.weight.{n_p}.bin"), dtype=float_type)
         assert(len(attn_qkv_proj_weight) == np.prod(attn_qkv_weight_shape))
         attn_qkv_proj_weight.reshape(attn_qkv_weight_shape)
+        
         if n_l not in moe_layers:
-
             mlp_dense_h_to_4h_weight = np.fromfile(os.path.join(folder, f"model.layers.{n_l}.mlp.dense_h_to_4h.weight.{n_p}.bin"), dtype=float_type)
             assert(len(mlp_dense_h_to_4h_weight) == np.prod(ffn_h_to_4h_weight_shape))
             mlp_dense_h_to_4h_weight.reshape(ffn_h_to_4h_weight_shape)
@@ -141,4 +152,3 @@ for n_l in range(num_layers):
     post_attn_layernorm_weight = np.fromfile(os.path.join(folder, f"model.layers.{n_l}.post_attention_layernorm.weight.bin"), dtype=float_type)
     assert(len(post_attn_layernorm_weight) == np.prod(layernorm_shape))
     post_attn_layernorm_weight.reshape(layernorm_shape)
-    
