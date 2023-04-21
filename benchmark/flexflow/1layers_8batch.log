@@ -1,0 +1,281 @@
+[0 - 7f1a41f91000]    0.290658 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291012 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291134 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291243 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291353 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291456 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291562 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.291667 {3}{Mapper}: Enabled Control Replication Optimizations.
+[0 - 7f1a41f91000]    0.295134 {3}{MoE}: batchSize(8) workersPerNodes(4) numNodes(1)
+workSpaceSize (1024 MB)
+workSpaceSize (1024 MB)
+workSpaceSize (1024 MB)
+workSpaceSize (1024 MB)
+token_dim: 1024
+max_sequence_length: 256
+batch_size: 8
+out_dim: 1024
+num_layers: 1
+vocab_size: 51200
+dataset_path: 
+token_to_generate: 
+arrival_info_path: 
+total_requests: 2560
+poisson_distribution: true
+arrival_rate: 250
+num_inflight_batches: 4
+incremental_mode: true
+hidden_size: 1024
+num_attention_heads: 16
+size_per_head: 64
+num_exp: 64
+experts_per_block: 16
+num_select: 1
+alpha: 2
+lambda: 0.04
+moe_layers: 1 3 5 7 9 11 13 15 17 19 21 23 
+num_nodes = 1 num_gpus_per_node = 4
+CUDA ALLOCATION (Linear): 16384
+optimal_views.size = 12
+views.size() = 12
+Deserialized Views...
+node[5000023]: type(ArgTopK_5000023) view(1 4 0)  inEdge(node(5000022) idx(0))
+node[5000022]: type(Softmax_5000022) view(1 4 0)  inEdge(node(5000021) idx(0))
+node[5000021]: type(Dense_5000021) view(1 4 0)  inEdge(node(5000020) idx(0))
+node[5000020]: type(LayerNorm_5000020) view(1 4 0)  inEdge(node(5000019) idx(0))
+node[5000019]: type(Add_5000019) view(1 4 0)  inEdge(node(5000016) idx(0)) inEdge(node(5000018) idx(0))
+node[5000018]: type(Dense_5000018) view(1 4 0)  inEdge(node(5000017) idx(0))
+node[5000017]: type(Dense_5000017) view(1 4 0)  inEdge(node(5000016) idx(0))
+node[5000016]: type(LayerNorm_5000016) view(1 4 0)  inEdge(node(5000015) idx(0))
+node[5000015]: type(Add_5000015) view(1 4 0)  inEdge(node(5000013) idx(0)) inEdge(node(5000014) idx(0))
+node[5000014]: type(IncMultiHeadSelfAttention_5000014) view(1 4 0)  inEdge(node(5000013) idx(0))
+node[5000012]: type(Input_5000012) view(1 4 0) 
+node[5000013]: type(Embedding_5000013) view(1 4 0)  inEdge(node(5000012) idx(0))
+digraph taskgraph {
+  node0 [label="{ Input_5000012 | { shape([ 256/1 8/1 1/1 ]) } }",shape=record];
+  node1 [label="{ Embedding_5000013 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node0 -> node1;
+  node2 [label="{ IncMultiHeadSelfAttention_5000014 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node1 -> node2;
+  node3 [label="{ Add_5000015 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node2 -> node3;
+  node1 -> node3;
+  node4 [label="{ LayerNorm_5000016 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node3 -> node4;
+  node5 [label="{ Dense_5000017 | { 4096/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node4 -> node5;
+  node6 [label="{ Dense_5000018 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node5 -> node6;
+  node7 [label="{ Add_5000019 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node6 -> node7;
+  node4 -> node7;
+  node8 [label="{ LayerNorm_5000020 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node7 -> node8;
+  node9 [label="{ Dense_5000021 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node8 -> node9;
+  node10 [label="{ Softmax_5000022 | { 1024/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node9 -> node10;
+  node11 [label="{ ArgTopK_5000023 | { 1/1 | 256/1 | 8/1 | 1/1 } }",shape=record];
+  node10 -> node11;
+}
+ndim(1) dims[1 0 0 0]
+[0 - 7f1a66015000]    7.315932 {3}{Mapper}: Task Glorot Init Task (UID 21) allocating size: 209715200 with kind 6
+[0 - 7f1a600c2000]    7.315932 {3}{Mapper}: Task Uniform Init Task (UID 27) allocating size: 4096 with kind 6
+[0 - 7f1a60080000]    7.315932 {3}{Mapper}: Task Glorot Init Task (UID 22) allocating size: 16777216 with kind 6
+[0 - 7f1a6006a000]    7.316454 {3}{Mapper}: Task Uniform Init Task (UID 30) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.318104 {3}{Mapper}: Task Glorot Init Task (UID 39) allocating size: 16777216 with kind 6
+[0 - 7f1a600d8000]    7.318697 {3}{Mapper}: Task Zero Init Task (UID 43) allocating size: 16384 with kind 6
+[0 - 7f1a600ee000]    7.319864 {3}{Mapper}: Task Glorot Init Task (UID 50) allocating size: 16777216 with kind 6
+[0 - 7f1a600ac000]    7.320578 {3}{Mapper}: Task Zero Init Task (UID 55) allocating size: 4096 with kind 6
+[0 - 7f1a6006a000]    7.321532 {3}{Mapper}: Task Uniform Init Task (UID 57) allocating size: 4096 with kind 6
+[0 - 7f1a600d8000]    7.322209 {3}{Mapper}: Task Uniform Init Task (UID 60) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.323874 {3}{Mapper}: Task Glorot Init Task (UID 69) allocating size: 4194304 with kind 6
+operator[0]: type(0)
+	outputs[0] region(8,2,1)
+operator[1]: type(1)
+	outputs[0] region(10,3,2)
+operator[2]: type(23)
+	inputs[0] region(8,2,1)
+	outputs[0] region(12,4,3)
+operator[3]: type(1)
+	outputs[0] region(14,5,4)
+operator[4]: type(86)
+	inputs[0] region(12,4,3)
+	outputs[0] region(16,6,5)
+operator[5]: type(31)
+	inputs[0] region(16,6,5)
+	inputs[1] region(12,4,3)
+	outputs[0] region(18,7,6)
+operator[6]: type(1)
+	outputs[0] region(20,8,7)
+operator[7]: type(1)
+	outputs[0] region(22,9,8)
+operator[8]: type(82)
+	inputs[0] region(18,7,6)
+	outputs[0] region(24,10,9)
+operator[9]: type(1)
+	outputs[0] region(26,11,10)
+operator[10]: type(1)
+	outputs[0] region(28,12,11)
+operator[11]: type(5)
+	inputs[0] region(24,10,9)
+	outputs[0] region(30,13,12)
+operator[12]: type(1)
+	outputs[0] region(32,14,13)
+operator[13]: type(1)
+	outputs[0] region(34,15,14)
+operator[14]: type(5)
+	inputs[0] region(30,13,12)
+	outputs[0] region(36,16,15)
+operator[15]: type(31)
+	inputs[0] region(36,16,15)
+	inputs[1] region(24,10,9)
+	outputs[0] region(38,17,16)
+operator[16]: type(1)
+	outputs[0] region(40,18,17)
+operator[17]: type(1)
+	outputs[0] region(42,19,18)
+operator[18]: type(82)
+	inputs[0] region(38,17,16)
+	outputs[0] region(44,20,19)
+operator[19]: type(1)
+	outputs[0] region(46,21,20)
+operator[20]: type(1)
+	outputs[0] region(48,22,21)
+operator[21]: type(5)
+	inputs[0] region(44,20,19)
+	outputs[0] region(50,23,22)
+operator[22]: type(19)
+	inputs[0] region(50,23,22)
+	outputs[0] region(52,24,23)
+operator[23]: type(61)
+	inputs[0] region(52,24,23)
+	outputs[0] region(54,25,24)
+[0 - 7f1a6006a000]    7.324530 {3}{Mapper}: Task Zero Init Task (UID 74) allocating size: 4096 with kind 6
+[0 - 7f1a600ee000]    7.327981 {3}{Mapper}: Task Constant Init Task (UID 82) allocating size: 8192 with kind 6
+[0 - 7f1a66015000]    7.328666 {3}{Mapper}: Task Embedding Init Task (UID 84) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.367245 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 89) allocating size: 16777216 with kind 6
+[0 - 7f1a66015000]    7.367811 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 89) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.377989 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 93) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.381475 {3}{Mapper}: Task layernorm_init_task (UID 99) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.381942 {3}{Mapper}: Task layernorm_init_task (UID 99) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.382424 {3}{Mapper}: Task layernorm_init_task (UID 99) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.386496 {3}{Mapper}: Task Linear Init Task (UID 103) allocating size: 33554432 with kind 6
+init linear (input): in_dim(1024) out_dim(4096) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.389161 {3}{Mapper}: Task Linear Init Task (UID 107) allocating size: 8388608 with kind 6
+init linear (input): in_dim(4096) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a600ee000]    7.392107 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 111) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.395439 {3}{Mapper}: Task layernorm_init_task (UID 117) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.395911 {3}{Mapper}: Task layernorm_init_task (UID 117) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.396355 {3}{Mapper}: Task layernorm_init_task (UID 117) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.400345 {3}{Mapper}: Task Linear Init Task (UID 121) allocating size: 8388608 with kind 6
+init linear (input): in_dim(1024) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.403123 {3}{Mapper}: Task softmax_init_task (UID 125) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.405542 {3}{Mapper}: Task ArgTopK Init Task (UID 129) allocating size: 8192 with kind 6
+[0 - 7f1a41fa7000]    7.408047 {3}{Mapper}: Task Constant Init Task (UID 136) allocating size: 8192 with kind 6
+[0 - 7f1a600ee000]    7.408431 {3}{Mapper}: Task Constant Init Task (UID 139) allocating size: 8192 with kind 6
+[0 - 7f1a600d8000]    7.408874 {3}{Mapper}: Task Embedding Init Task (UID 141) allocating size: 8388608 with kind 6
+[0 - 7f1a600d8000]    7.409344 {3}{Mapper}: Task Embedding Init Task (UID 141) allocating size: 209715200 with kind 6
+[0 - 7f1a66015000]    7.478392 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 145) allocating size: 16777216 with kind 6
+[0 - 7f1a66015000]    7.478856 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 145) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.488673 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 149) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.491585 {3}{Mapper}: Task layernorm_init_task (UID 153) allocating size: 8388608 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.494397 {3}{Mapper}: Task Linear Init Task (UID 157) allocating size: 33554432 with kind 6
+[0 - 7f1a66015000]    7.494838 {3}{Mapper}: Task Linear Init Task (UID 157) allocating size: 16777216 with kind 6
+init linear (input): in_dim(1024) out_dim(4096) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.503554 {3}{Mapper}: Task Linear Init Task (UID 161) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.504007 {3}{Mapper}: Task Linear Init Task (UID 161) allocating size: 16777216 with kind 6
+init linear (input): in_dim(4096) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.512664 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 165) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.515559 {3}{Mapper}: Task layernorm_init_task (UID 169) allocating size: 8388608 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.518357 {3}{Mapper}: Task Linear Init Task (UID 173) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.518791 {3}{Mapper}: Task Linear Init Task (UID 173) allocating size: 4194304 with kind 6
+init linear (input): in_dim(1024) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.523339 {3}{Mapper}: Task softmax_init_task (UID 177) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.525621 {3}{Mapper}: Task ArgTopK Init Task (UID 181) allocating size: 8192 with kind 6
+[0 - 7f1a60028000]    7.528058 {3}{Mapper}: Task Constant Init Task (UID 188) allocating size: 8192 with kind 6
+[0 - 7f1a600ee000]    7.528455 {3}{Mapper}: Task Constant Init Task (UID 191) allocating size: 8192 with kind 6
+[0 - 7f1a66015000]    7.528961 {3}{Mapper}: Task Embedding Init Task (UID 193) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.529402 {3}{Mapper}: Task Embedding Init Task (UID 193) allocating size: 209715200 with kind 6
+[0 - 7f1a66015000]    7.598705 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 197) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.602300 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 201) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.604934 {3}{Mapper}: Task layernorm_init_task (UID 205) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.605398 {3}{Mapper}: Task layernorm_init_task (UID 205) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.605838 {3}{Mapper}: Task layernorm_init_task (UID 205) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.609785 {3}{Mapper}: Task Linear Init Task (UID 209) allocating size: 33554432 with kind 6
+[0 - 7f1a66015000]    7.610239 {3}{Mapper}: Task Linear Init Task (UID 209) allocating size: 16777216 with kind 6
+init linear (input): in_dim(1024) out_dim(4096) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.618724 {3}{Mapper}: Task Linear Init Task (UID 213) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.619208 {3}{Mapper}: Task Linear Init Task (UID 213) allocating size: 16777216 with kind 6
+init linear (input): in_dim(4096) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.628024 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 217) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.631263 {3}{Mapper}: Task layernorm_init_task (UID 221) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.631735 {3}{Mapper}: Task layernorm_init_task (UID 221) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.632206 {3}{Mapper}: Task layernorm_init_task (UID 221) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.636093 {3}{Mapper}: Task Linear Init Task (UID 225) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.636525 {3}{Mapper}: Task Linear Init Task (UID 225) allocating size: 4194304 with kind 6
+init linear (input): in_dim(1024) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.640928 {3}{Mapper}: Task softmax_init_task (UID 229) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.643498 {3}{Mapper}: Task ArgTopK Init Task (UID 233) allocating size: 8192 with kind 6
+[0 - 7f1a600ac000]    7.646005 {3}{Mapper}: Task Constant Init Task (UID 240) allocating size: 8192 with kind 6
+[0 - 7f1a600ee000]    7.646571 {3}{Mapper}: Task Constant Init Task (UID 243) allocating size: 8192 with kind 6
+[0 - 7f1a600d8000]    7.646878 {3}{Mapper}: Task Embedding Init Task (UID 245) allocating size: 8388608 with kind 6
+[0 - 7f1a600d8000]    7.647365 {3}{Mapper}: Task Embedding Init Task (UID 245) allocating size: 209715200 with kind 6
+[0 - 7f1a66015000]    7.716550 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 249) allocating size: 16777216 with kind 6
+[0 - 7f1a66015000]    7.717001 {3}{Mapper}: Task IncMultiHeadSelfAttention Init Task (UID 249) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.726347 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 253) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.729064 {3}{Mapper}: Task layernorm_init_task (UID 257) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.729530 {3}{Mapper}: Task layernorm_init_task (UID 257) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.730003 {3}{Mapper}: Task layernorm_init_task (UID 257) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.734098 {3}{Mapper}: Task Linear Init Task (UID 261) allocating size: 33554432 with kind 6
+[0 - 7f1a66015000]    7.734530 {3}{Mapper}: Task Linear Init Task (UID 261) allocating size: 16777216 with kind 6
+init linear (input): in_dim(1024) out_dim(4096) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.743118 {3}{Mapper}: Task Linear Init Task (UID 265) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.743571 {3}{Mapper}: Task Linear Init Task (UID 265) allocating size: 16777216 with kind 6
+init linear (input): in_dim(4096) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.752286 {3}{Mapper}: Task ElementWiseBinary Init Task (UID 269) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.755598 {3}{Mapper}: Task layernorm_init_task (UID 273) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.756088 {3}{Mapper}: Task layernorm_init_task (UID 273) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.756533 {3}{Mapper}: Task layernorm_init_task (UID 273) allocating size: 4096 with kind 6
+CUDA ALLOCATION (LayerNorm): 49152
+[0 - 7f1a66015000]    7.760469 {3}{Mapper}: Task Linear Init Task (UID 277) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.760901 {3}{Mapper}: Task Linear Init Task (UID 277) allocating size: 4194304 with kind 6
+init linear (input): in_dim(1024) out_dim(1024) batch_size(2048)
+CUDA ALLOCATION (Linear): 8192
+[0 - 7f1a66015000]    7.765195 {3}{Mapper}: Task softmax_init_task (UID 281) allocating size: 8388608 with kind 6
+[0 - 7f1a66015000]    7.767727 {3}{Mapper}: Task ArgTopK Init Task (UID 285) allocating size: 8192 with kind 6
+[0 - 7f1a66015000]    7.770066 {3}{Mapper}: Task Constant Init Task (UID 289) allocating size: 8192 with kind 6
+[0 - 7f1a66015000]    7.771458 {3}{Mapper}: Task Load Entire Dataset Task (UID 290) allocating size: 2621440 with kind 5
+Input dataset path is empty, using random input samples
+[0 - 7f1a66015000]    7.789244 {3}{Mapper}: Task Embedding Forward Task (UID 309) allocating size: 8388608 with kind 5
+[0 - 7f1a600ac000]    7.793421 {3}{Mapper}: Task Embedding Forward Task (UID 347) allocating size: 8388608 with kind 5
+[0 - 7f1a600d8000]    7.796845 {3}{Mapper}: Task Embedding Forward Task (UID 372) allocating size: 8388608 with kind 5
+[0 - 7f1a600ac000]    7.800016 {3}{Mapper}: Task Linear Forward Task (UID 387) allocating size: 16384 with kind 6
+[0 - 7f1a600ee000]    7.800125 {3}{Mapper}: Task Embedding Forward Task (UID 389) allocating size: 8388608 with kind 5
+[0 - 7f1a600ee000]    7.802312 {3}{Mapper}: Task Linear Forward Task (UID 399) allocating size: 4096 with kind 6
+[0 - 7f1a600d8000]    7.803818 {3}{Mapper}: Task Linear Forward Task (UID 403) allocating size: 16384 with kind 6
+[0 - 7f1a600c2000]    7.806247 {3}{Mapper}: Task Linear Forward Task (UID 411) allocating size: 4096 with kind 6
+[0 - 7f1a60080000]    7.807021 {3}{Mapper}: Task Linear Forward Task (UID 413) allocating size: 16384 with kind 6
+[0 - 7f1a66015000]    7.807739 {3}{Mapper}: Task Linear Forward Task (UID 415) allocating size: 4096 with kind 6
+[0 - 7f1a600ac000]    7.809543 {3}{Mapper}: Task Linear Forward Task (UID 421) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.811786 {3}{Mapper}: Task Linear Forward Task (UID 428) allocating size: 4096 with kind 6
+[0 - 7f1a66015000]    7.814979 {3}{Mapper}: Task Linear Forward Task (UID 437) allocating size: 4096 with kind 6
+ELAPSED TIME = 14.1078s, THROUGHPUT = 181.46 requests/s
